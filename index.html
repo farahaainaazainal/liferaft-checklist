@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Keisha Liferaft Digital Inspection Checklist (Rev 03)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    .font-mono-code { font-family: 'JetBrains Mono', monospace; }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex flex-col">
+  <header class="bg-slate-900 text-white shadow-md sticky top-0 z-40 border-b border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-lg bg-amber-500 flex items-center justify-center font-black text-slate-950 text-xl tracking-wider shadow">KL</div>
+        <div>
+          <h1 class="text-lg font-bold tracking-tight text-white flex items-center gap-2">
+            KEISHA LIFERAFT CHECKLIST SYSTEM
+            <span class="text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-400/30 px-2 py-0.5 rounded">Rev 03</span>
+          </h1>
+          <p class="text-xs text-slate-400">Digital Shipyard Inspection Checklist • Connected to Google Sheets</p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 space-y-6">
+    <!-- Status & Role Toolbar -->
+    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs md:text-sm">
+      <div class="flex items-center gap-2">
+        <span class="font-semibold text-slate-500">Current Role Mode:</span>
+        <select id="role-selector" onchange="toggleRole()" class="bg-slate-100 border border-slate-300 font-bold text-slate-800 rounded-lg px-2.5 py-1 text-xs">
+          <option value="technician">Technician (Shipyard Inspection Mode)</option>
+          <option value="supervisor">Supervisor (Review & Approval Gate)</option>
+        </select>
+      </div>
+      <div class="flex items-center gap-2">
+        <span id="badge-status" class="px-2.5 py-1 rounded-md text-xs font-bold uppercase bg-amber-100 text-amber-800 border border-amber-200">
+          Draft
+        </span>
+      </div>
+    </div>
+
+    <!-- Notification Banner -->
+    <div id="status-alert" class="hidden p-4 rounded-xl text-sm font-semibold"></div>
+
+    <!-- Master Checklist Card -->
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+      <div class="bg-slate-900 text-white p-4 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 class="text-base font-bold">KEISHA LIFERAFT CHECKLIST (Rev 03)</h2>
+          <p class="text-xs text-slate-400">Complete all inspection sections below in accordance with SOLAS requirements.</p>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="fillSampleData()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-400/30 text-xs font-semibold rounded-lg transition">Load Sample Data</button>
+          <button onclick="clearForm()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg transition">Clear All</button>
+        </div>
+      </div>
+
+      <form id="inspection-form" class="p-6 space-y-8" onsubmit="event.preventDefault();">
+        <!-- Section 1: Vessel & Liferaft Particulars -->
+        <div>
+          <div class="flex items-center gap-2 border-b border-slate-200 pb-2 mb-4">
+            <span class="w-6 h-6 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center font-bold">1</span>
+            <h3 class="text-base font-bold text-slate-900 uppercase tracking-wide">Vessel & Liferaft Particulars</h3>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+            <div><label class="block font-semibold text-slate-700 mb-1">Vessel Name *</label><input type="text" id="f_vessel" value="IZAR" class="w-full p-2 border rounded-lg"></div>
+            <div><label class="block font-semibold text-slate-700 mb-1">Certificate No. *</label><input type="text" id="f_cert_no" value="KS 260461" class="w-full p-2 border rounded-lg bg-slate-50"></div>
+            <div><label class="block font-semibold text-slate-700 mb-1">Port of Registry *</label><input type="text" id="f_port" value="PORT KELANG" class="w-full p-2 border rounded-lg"></div>
+            <div><label class="block font-semibold text-slate-700 mb-1">Date of Inspection *</label><input type="date" id="f_insp_date" value="2026-07-10" oninput="autoCalcNextInspection()" class="w-full p-2 border rounded-lg"></div>
+            <div><label class="block font-semibold text-slate-700 mb-1">Next Inspection Date</label><input type="date" id="f_next_insp_date" value="2027-07-09" class="w-full p-2 border rounded-lg bg-slate-50"></div>
+            <div><label class="block font-semibold text-slate-700 mb-1">Brand *</label><input type="text" id="f_brand" value="YOULONG" class="w-full p-2 border rounded-lg"></div>
+            <div><label class="block font-semibold text-slate-700 mb-1">Capacity (Persons) *</label><input type="number" id="f_capacity" value="15" class="w-full p-2 border rounded-lg"></div>
+            <div><label class="block font-semibold text-slate-700 mb-1">Serial Number (S/N) *</label><input type="text" id="f_sn" value="16589" class="w-full p-2 border rounded-lg"></div>
+            <div><label class="block font-semibold text-slate-700 mb-1">Type *</label><input type="text" id="f_type" value="KHA-15" class="w-full p-2 border rounded-lg"></div>
+            <div><label class="block font-semibold text-slate-700 mb-1">Maker *</label><input type="text" id="f_maker" value="SHANGHAI YOULONG RUBBER PRODUCTS CO. LTD." class="w-full p-2 border rounded-lg"></div>
+            <div><label class="block font-semibold text-slate-700 mb-1">DOM *</label><input type="text" id="f_dom" value="FEB 2023" class="w-full p-2 border rounded-lg"></div>
+            <div><label class="block font-semibold text-slate-700 mb-1">Painter Line Length (M)</label><input type="number" id="f_painter_len" value="28" class="w-full p-2 border rounded-lg"></div>
+            <div><label class="block font-semibold text-slate-700 mb-1">Max Storage Height (M)</label><input type="number" id="f_max_height" value="18" class="w-full p-2 border rounded-lg"></div>
+          </div>
+        </div>
+
+        <!-- Section: Cylinder Record -->
+        <div>
+          <div class="flex items-center gap-2 border-b border-slate-200 pb-2 mb-4">
+            <span class="w-6 h-6 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center font-bold">CYL</span>
+            <h3 class="text-base font-bold text-slate-900 uppercase tracking-wide">Cylinder Records</h3>
+          </div>
+          <div class="border border-slate-200 rounded-xl p-4 bg-slate-50 text-xs">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div><label class="text-slate-600">Serial No.</label><input type="text" id="f_cyl_no" value="049599 / 049574" class="w-full p-1.5 border rounded"></div>
+              <div><label class="text-slate-600">Tare Weight (Kg)</label><input type="number" step="0.01" id="f_cyl_tare" value="9.43" class="w-full p-1.5 border rounded"></div>
+              <div><label class="text-slate-600">CO2 Weight (Kg)</label><input type="number" step="0.01" id="f_cyl_co2" value="3.00" class="w-full p-1.5 border rounded"></div>
+              <div><label class="text-slate-600">N2 Weight (Kg)</label><input type="number" step="0.01" id="f_cyl_n2" value="0.25" class="w-full p-1.5 border rounded"></div>
+              <div><label class="text-slate-600">Full Weight (Kg)</label><input type="number" step="0.01" id="f_cyl_full" value="12.68" class="w-full p-1.5 border rounded"></div>
+              <div><label class="text-slate-600">Measured Weight (Kg)</label><input type="number" step="0.01" id="f_cyl_measured" value="12.68" class="w-full p-1.5 border rounded font-bold bg-blue-50"></div>
+              <div><label class="text-slate-600">Lead Seal</label><input type="text" id="f_cyl_seal" value="YES" class="w-full p-1.5 border rounded"></div>
+              <div><label class="text-slate-600">Leakage Test</label><input type="text" id="f_cyl_leak" value="YES" class="w-full p-1.5 border rounded"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Submission Buttons -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t">
+          <div class="p-4 bg-blue-50/60 border border-blue-200 rounded-xl space-y-3">
+            <h4 class="font-bold text-slate-900 text-sm">Technician Submission</h4>
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <div><label class="font-semibold">Technician Name *</label><input type="text" id="f_tech_name" value="MOHD AZLAN BIN ISMAIL" class="w-full p-2 border rounded bg-white mt-1"></div>
+              <div><label class="font-semibold">Tech ID</label><input type="text" id="f_tech_id" value="TECH-KLR-042" class="w-full p-2 border rounded bg-white mt-1"></div>
+            </div>
+            <div class="flex justify-end pt-2">
+              <button type="button" id="btn-submit" onclick="submitToGoogleSheet()" class="px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-wider shadow transition">
+                Submit Directly to Google Sheets
+              </button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <script>
+    // PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE:
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw19PV4IDQbUszGCKLz-4OIYWO8FBpTXvY6HeQ_tqqoJbixg4wcdER95YiTzLCf5oTE/exec";
+
+    function autoCalcNextInspection() {
+      const inspDateVal = document.getElementById("f_insp_date").value;
+      if (!inspDateVal) return;
+      const d = new Date(inspDateVal);
+      d.setFullYear(d.getFullYear() + 1);
+      d.setDate(d.getDate() - 1);
+      document.getElementById("f_next_insp_date").value = d.toISOString().split("T")[0];
+    }
+
+    function toggleRole() {
+      const role = document.getElementById("role-selector").value;
+      document.getElementById("badge-status").textContent = role.toUpperCase();
+    }
+
+    function fillSampleData() {
+      document.getElementById("f_vessel").value = "IZAR";
+      document.getElementById("f_cert_no").value = "KS 260461";
+    }
+
+    function clearForm() {
+      document.getElementById("inspection-form").reset();
+    }
+
+    // Submit payload directly to Google Sheets
+    async function submitToGoogleSheet() {
+      const btn = document.getElementById("btn-submit");
+      const alertBox = document.getElementById("status-alert");
+
+      if (SCRIPT_URL.includes("PASTE_YOUR")) {
+        alertBox.className = "p-4 rounded-xl text-sm font-semibold bg-red-100 text-red-800 border border-red-300 block";
+        alertBox.textContent = "Please configure your Apps Script Web App URL in SCRIPT_URL first.";
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = "Submitting...";
+
+      const payload = {
+        vesselName: document.getElementById("f_vessel").value,
+        portOfRegistry: document.getElementById("f_port").value,
+        certNo: document.getElementById("f_cert_no").value,
+        inspDate: document.getElementById("f_insp_date").value,
+        nextInspDate: document.getElementById("f_next_insp_date").value,
+        brand: document.getElementById("f_brand").value,
+        capacity: document.getElementById("f_capacity").value,
+        serialNo: document.getElementById("f_sn").value,
+        type: document.getElementById("f_type").value,
+        maker: document.getElementById("f_maker").value,
+        dom: document.getElementById("f_dom").value,
+        painterLength: document.getElementById("f_painter_len").value,
+        maxHeight: document.getElementById("f_max_height").value,
+        cylinders: document.getElementById("f_cyl_no").value,
+        cylTare: document.getElementById("f_cyl_tare").value,
+        cylCo2: document.getElementById("f_cyl_co2").value,
+        cylN2: document.getElementById("f_cyl_n2").value,
+        cylFull: document.getElementById("f_cyl_full").value,
+        cylMeasured: document.getElementById("f_cyl_measured").value,
+        cylSeal: document.getElementById("f_cyl_seal").value,
+        cylLeak: document.getElementById("f_cyl_leak").value,
+        techName: document.getElementById("f_tech_name").value,
+        approvalStatus: "Submitted"
+      };
+
+      try {
+        await fetch(SCRIPT_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        alertBox.className = "p-4 rounded-xl text-sm font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300 block";
+        alertBox.textContent = "Success! Inspection submitted and recorded with Date & Timestamp in Google Sheets.";
+        document.getElementById("badge-status").textContent = "SUBMITTED";
+        document.getElementById("badge-status").className = "px-2.5 py-1 rounded-md text-xs font-bold uppercase bg-emerald-100 text-emerald-800 border";
+      } catch (err) {
+        alertBox.className = "p-4 rounded-xl text-sm font-semibold bg-red-100 text-red-800 border border-red-300 block";
+        alertBox.textContent = "Submission failed: " + err.message;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Submit Directly to Google Sheets";
+      }
+    }
+  </script>
+</body>
+</html>
